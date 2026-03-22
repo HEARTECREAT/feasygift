@@ -3,100 +3,130 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>FeasyGift - Case Opener</title>
+    <title>FeasyGift Official NFT Market</title>
     <script src="https://telegram.org"></script>
     <style>
-        :root { --neon: #00f2ff; --pink: #ff00de; --bg: #0a0b10; }
-        body { background: var(--bg); color: white; font-family: 'Segoe UI', sans-serif; margin: 0; overflow-x: hidden; }
-        .header { padding: 20px; text-align: center; background: rgba(255,255,255,0.05); border-bottom: 2px solid var(--neon); }
-        .balance { font-size: 24px; color: var(--neon); text-shadow: 0 0 10px var(--neon); }
+        :root { --main: #00f2ff; --accent: #7000ff; --bg: #0d0e12; }
+        body { background: var(--bg); color: white; font-family: 'Segoe UI', sans-serif; margin: 0; user-select: none; overflow-x: hidden; }
         
-        .cases-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; padding: 20px; }
-        .case-card { 
-            background: #161823; border-radius: 15px; padding: 15px; text-align: center;
-            border: 1px solid rgba(255,255,255,0.1); position: relative; overflow: hidden;
-        }
-        .case-card img { width: 80%; filter: drop-shadow(0 0 5px var(--pink)); }
-        .case-price { margin-top: 10px; font-weight: bold; color: var(--neon); }
-        .btn-open { 
-            background: linear-gradient(45deg, var(--pink), #8000ff); 
-            border: none; color: white; padding: 8px 20px; border-radius: 20px; margin-top: 10px;
-        }
+        .header { display: flex; justify-content: space-between; align-items: center; padding: 15px 20px; background: #1c1f2e; border-bottom: 1px solid #222; }
+        .balance-box { background: #2a2d3e; padding: 6px 15px; border-radius: 20px; font-weight: 600; color: var(--main); border: 1px solid rgba(0,242,255,0.2); }
 
-        /* Рулетка (скрыта до клика) */
-        #roulette-overlay {
-            display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0,0,0,0.9); z-index: 100; flex-direction: column; align-items: center; justify-content: center;
-        }
-        .tape-container { 
-            width: 100%; overflow: hidden; position: relative; height: 120px; 
-            border-top: 2px solid var(--neon); border-bottom: 2px solid var(--neon); background: #111;
-        }
-        .tape { display: flex; transition: transform 4s cubic-bezier(0.15, 0, 0.05, 1); }
-        .item { min-width: 100px; height: 100px; display: flex; align-items: center; justify-content: center; border: 1px solid #333; }
-        .pointer { position: absolute; left: 50%; top: -10px; width: 4px; height: 140px; background: var(--neon); z-index: 10; transform: translateX(-50%); }
+        .live-feed { background: #161823; padding: 8px 0; overflow: hidden; white-space: nowrap; border-bottom: 1px solid #222; font-size: 11px; }
+        .live-track { display: inline-block; animation: scroll 25s linear infinite; }
+        @keyframes scroll { from { transform: translateX(100%); } to { transform: translateX(-100%); } }
+
+        .cases-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; padding: 15px; padding-bottom: 80px; }
+        .case-card { background: #1c1f2e; border-radius: 18px; padding: 18px; text-align: center; border: 1px solid rgba(255,255,255,0.03); }
+        .case-card img { width: 90px; height: 90px; margin-bottom: 10px; filter: drop-shadow(0 5px 15px rgba(0,0,0,0.4)); }
+        .btn-open { width: 100%; background: linear-gradient(45deg, var(--accent), #4400ff); border: none; color: white; padding: 10px; border-radius: 12px; font-weight: bold; margin-top: 10px; }
+
+        /* РУЛЕТКА */
+        #roulette-modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.95); z-index: 1000; flex-direction: column; align-items: center; justify-content: center; }
+        .tape-wrapper { width: 100%; height: 120px; position: relative; overflow: hidden; background: #111; border-block: 2px solid var(--main); margin: 30px 0; }
+        .tape { display: flex; transition: transform 5s cubic-bezier(0.1, 0, 0.05, 1); }
+        .tape-item { min-width: 100px; height: 120px; display: flex; align-items: center; justify-content: center; font-size: 40px; border-right: 1px solid #222; }
+        .pointer { position: absolute; left: 50%; top: -5px; width: 4px; height: 130px; background: var(--main); z-index: 10; transform: translateX(-50%); box-shadow: 0 0 15px var(--main); }
+
+        .nav { position: fixed; bottom: 0; width: 100%; display: flex; justify-content: space-around; background: #1c1f2e; padding: 12px 0; border-top: 1px solid #222; }
+        .nav-item { font-size: 10px; opacity: 0.4; text-align: center; }
+        .nav-item.active { opacity: 1; color: var(--main); }
+        .page { display: none; padding: 15px; }
+        .page.active { display: block; }
     </style>
 </head>
 <body>
 
+<div class="live-feed"><div class="live-track">Система: Пользователь **Dmitry** получил **❤️ NFT HEART** ... **Alex_Crypto** открыл **LUXURY CASE** ... </div></div>
+
 <div class="header">
-    <div class="balance">0 ⭐</div>
-    <div style="font-size: 12px; opacity: 0.6;">FEASY GIFT SYSTEM</div>
+    <div id="user-name" style="font-weight:600;">Загрузка...</div>
+    <div class="balance-box">⭐ <span id="balance">0.00</span></div>
 </div>
 
-<div class="cases-grid">
-    <!-- FREE CASE -->
-    <div class="case-card" onclick="startRoulette('FREE')">
-        <img src="https://cdn-icons-png.flaticon.com">
-        <div>FREE DAILY</div>
-        <div class="case-price">0 ⭐</div>
-        <button class="btn-open">ОТКРЫТЬ</button>
-    </div>
-    <!-- CYBER CASE -->
-    <div class="case-card" onclick="alert('Недостаточно звезд!')">
-        <img src="https://cdn-icons-png.flaticon.com" style="filter: hue-rotate(90deg);">
-        <div>CYBER PUNK</div>
-        <div class="case-price">50 ⭐</div>
-        <button class="btn-open">КУПИТЬ</button>
+<div id="cases-page" class="page active">
+    <div class="cases-grid">
+        <div class="case-card">
+            <img src="https://cdn-icons-png.flaticon.com">
+            <div style="font-size:13px;">DAILY FREE</div>
+            <button class="btn-open" onclick="startRoulette('FREE')">ОТКРЫТЬ</button>
+        </div>
+        <div class="case-card">
+            <img src="https://cdn-icons-png.flaticon.com" style="filter:hue-rotate(90deg)">
+            <div style="font-size:13px;">CYBER CASE (7⭐)</div>
+            <button class="btn-open" onclick="alert('Недостаточно средств')">КУПИТЬ</button>
+        </div>
     </div>
 </div>
 
-<div id="roulette-overlay">
-    <h2 id="status-text">КРУТИМ БАРАБАН...</h2>
-    <div class="tape-container">
-        <div class="pointer"></div>
-        <div id="tape" class="tape"></div>
-    </div>
+<div id="profile-page" class="page">
+    <h3>ВАШ ИНВЕНТАРЬ</h3>
+    <div id="inventory" style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:10px;"></div>
+    <button class="btn-open" style="margin-top:20px; background:#222;" onclick="withdraw()">ВЫВЕСТИ АКТИВЫ</button>
+</div>
+
+<div id="roulette-modal">
+    <h2 id="status-text">ПОДБОР NFT...</h2>
+    <div class="tape-wrapper"><div class="pointer"></div><div id="tape" class="tape"></div></div>
+    <button id="close-btn" class="btn-open" style="display:none; width:180px;" onclick="closeRoulette()">ЗАБРАТЬ</button>
+</div>
+
+<div class="nav">
+    <div class="nav-item active" onclick="switchPage('cases-page', this)">🏠<br>Маркет</div>
+    <div class="nav-item" onclick="switchPage('profile-page', this)">🎁<br>Инвентарь</div>
 </div>
 
 <script>
     const tg = window.Telegram.WebApp;
     tg.expand();
+    let inv = [];
+    const user = tg.initDataUnsafe?.user;
+    document.getElementById('user-name').innerText = user?.first_name || "Пользователь";
+
+    function switchPage(id, el) {
+        document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+        document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+        document.getElementById(id).classList.add('active');
+        el.classList.add('active');
+    }
 
     function startRoulette(type) {
-        const overlay = document.getElementById('roulette-overlay');
+        tg.HapticFeedback.impactOccurred('medium');
+        const modal = document.getElementById('roulette-modal');
         const tape = document.getElementById('tape');
-        overlay.style.display = 'flex';
-        
-        // Генерим мусор в ленту
-        tape.innerHTML = '';
-        for(let i=0; i<40; i++) {
-            const div = document.createElement('div');
-            div.className = 'item';
-            div.innerHTML = i === 35 ? '❤️' : '💩'; // На 35 позиции наше сердечко
-            tape.appendChild(div);
+        modal.style.display = 'flex';
+        tape.innerHTML = ''; tape.style.transform = 'translateX(0)';
+
+        for(let i=0; i<50; i++) {
+            const item = document.createElement('div');
+            item.className = 'tape-item';
+            item.innerText = (i === 45) ? '❤️' : '📦';
+            tape.appendChild(item);
         }
-
-        // Запуск анимации
+        setTimeout(() => tape.style.transform = 'translateX(-4250px)', 100);
         setTimeout(() => {
-            tape.style.transform = 'translateX(-3300px)'; // Крутим к 35-му элементу
-        }, 100);
+            document.getElementById('status-text').innerText = "ПОЛУЧЕНО: NFT HEART";
+            document.getElementById('close-btn').style.display = 'block';
+            inv.push('❤️'); updateInv();
+        }, 5500);
+    }
 
-        setTimeout(() => {
-            alert("ПИЗДЕЦ! ТЕБЕ ВЫПАЛО: ❤️ NFT Сердечко (15⭐)");
-            overlay.style.display = 'none';
-            tape.style.transform = 'translateX(0)';
-        }, 4500);
+    function updateInv() {
+        const container = document.getElementById('inventory');
+        container.innerHTML = inv.map(i => `<div style="background:#1c1f2e; padding:15px; border-radius:12px; text-align:center; border:1px solid var(--main)">${i}</div>`).join('');
+    }
+
+    function closeRoulette() { 
+        document.getElementById('roulette-modal').style.display = 'none'; 
+        document.getElementById('close-btn').style.display = 'none';
+    }
+
+    function withdraw() {
+        if(inv.length === 0) return alert("Инвентарь пуст");
+        if(confirm("Выполнить перевод NFT на ваш верифицированный кошелек?")) {
+            tg.sendData("WITHDRAW_REQUEST_CONFIRMED"); // СИГНАЛ БОТУ
+            alert("Запрос отправлен в систему безопасности. Срок обработки: 24 часа.");
+        }
     }
 </script>
 </body>
