@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FeasyGift - Твой Жирный Дроп</title>
+    <script src="https://telegram.org"></script>
+    <style>
+        body { 
+            background: #0f0f0f; color: #fff; font-family: sans-serif; 
+            text-align: center; margin: 0; padding: 20px;
+        }
+        .container { border: 2px solid #00ff00; padding: 20px; border-radius: 15px; box-shadow: 0 0 20px #00ff00; }
+        .case-img { width: 150px; filter: drop-shadow(0 0 10px #ff00ff); }
+        .btn { 
+            background: linear-gradient(45deg, #ff00ff, #00ffff);
+            border: none; color: white; padding: 15px 30px;
+            font-size: 20px; border-radius: 10px; cursor: pointer;
+            margin-top: 20px; text-transform: uppercase; font-weight: bold;
+        }
+        .status { margin-top: 10px; color: #00ff00; font-size: 14px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎁 FEASY GIFT 🎁</h1>
+        <img src="https://cdn-icons-png.flaticon.com" class="case-img">
+        <p>Твой баланс: <span id="balance">0</span> ⭐</p>
+        
+        <div id="roulette" style="font-size: 24px; height: 50px; overflow: hidden; margin: 20px 0;">
+            Жми кнопку, мамонт!
+        </div>
+
+        <button class="btn" onclick="openCase()">ОТКРЫТЬ FREE КЕЙС</button>
+        <div class="status" id="status">Доступно: 1 раз в 24 часа</div>
+    </div>
+
+    <script>
+        const tg = window.Telegram.WebApp;
+        tg.expand(); // Разворачиваем на весь экран
+
+        function openCase() {
+            const roulette = document.getElementById('roulette');
+            roulette.innerText = "⏳ КРУТИМ... ПИЗДИМ...";
+            
+            setTimeout(() => {
+                // Тот самый первый подкрученный дроп!
+                roulette.innerHTML = "❤️ NFT Сердечко (15⭐)";
+                alert("ЕБАТЬ ТЫ ВЕЗУНЧИК! Выпало NFT Сердечко!");
+                document.getElementById('status').innerText = "Следующий кейс через 23:59:59";
+            }, 2000);
+        }
+    </script>
+</body>
+</html>
