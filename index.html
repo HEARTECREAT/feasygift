@@ -1,55 +1,103 @@
 <!DOCTYPE html>
-<html>
+<html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>FeasyGift - Твой Жирный Дроп</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>FeasyGift - Case Opener</title>
     <script src="https://telegram.org"></script>
     <style>
-        body { 
-            background: #0f0f0f; color: #fff; font-family: sans-serif; 
-            text-align: center; margin: 0; padding: 20px;
+        :root { --neon: #00f2ff; --pink: #ff00de; --bg: #0a0b10; }
+        body { background: var(--bg); color: white; font-family: 'Segoe UI', sans-serif; margin: 0; overflow-x: hidden; }
+        .header { padding: 20px; text-align: center; background: rgba(255,255,255,0.05); border-bottom: 2px solid var(--neon); }
+        .balance { font-size: 24px; color: var(--neon); text-shadow: 0 0 10px var(--neon); }
+        
+        .cases-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; padding: 20px; }
+        .case-card { 
+            background: #161823; border-radius: 15px; padding: 15px; text-align: center;
+            border: 1px solid rgba(255,255,255,0.1); position: relative; overflow: hidden;
         }
-        .container { border: 2px solid #00ff00; padding: 20px; border-radius: 15px; box-shadow: 0 0 20px #00ff00; }
-        .case-img { width: 150px; filter: drop-shadow(0 0 10px #ff00ff); }
-        .btn { 
-            background: linear-gradient(45deg, #ff00ff, #00ffff);
-            border: none; color: white; padding: 15px 30px;
-            font-size: 20px; border-radius: 10px; cursor: pointer;
-            margin-top: 20px; text-transform: uppercase; font-weight: bold;
+        .case-card img { width: 80%; filter: drop-shadow(0 0 5px var(--pink)); }
+        .case-price { margin-top: 10px; font-weight: bold; color: var(--neon); }
+        .btn-open { 
+            background: linear-gradient(45deg, var(--pink), #8000ff); 
+            border: none; color: white; padding: 8px 20px; border-radius: 20px; margin-top: 10px;
         }
-        .status { margin-top: 10px; color: #00ff00; font-size: 14px; }
+
+        /* Рулетка (скрыта до клика) */
+        #roulette-overlay {
+            display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.9); z-index: 100; flex-direction: column; align-items: center; justify-content: center;
+        }
+        .tape-container { 
+            width: 100%; overflow: hidden; position: relative; height: 120px; 
+            border-top: 2px solid var(--neon); border-bottom: 2px solid var(--neon); background: #111;
+        }
+        .tape { display: flex; transition: transform 4s cubic-bezier(0.15, 0, 0.05, 1); }
+        .item { min-width: 100px; height: 100px; display: flex; align-items: center; justify-content: center; border: 1px solid #333; }
+        .pointer { position: absolute; left: 50%; top: -10px; width: 4px; height: 140px; background: var(--neon); z-index: 10; transform: translateX(-50%); }
     </style>
 </head>
 <body>
-    <div class="container">
-        <h1>🎁 FEASY GIFT 🎁</h1>
-        <img src="https://cdn-icons-png.flaticon.com" class="case-img">
-        <p>Твой баланс: <span id="balance">0</span> ⭐</p>
-        
-        <div id="roulette" style="font-size: 24px; height: 50px; overflow: hidden; margin: 20px 0;">
-            Жми кнопку, мамонт!
-        </div>
 
-        <button class="btn" onclick="openCase()">ОТКРЫТЬ FREE КЕЙС</button>
-        <div class="status" id="status">Доступно: 1 раз в 24 часа</div>
+<div class="header">
+    <div class="balance">0 ⭐</div>
+    <div style="font-size: 12px; opacity: 0.6;">FEASY GIFT SYSTEM</div>
+</div>
+
+<div class="cases-grid">
+    <!-- FREE CASE -->
+    <div class="case-card" onclick="startRoulette('FREE')">
+        <img src="https://cdn-icons-png.flaticon.com">
+        <div>FREE DAILY</div>
+        <div class="case-price">0 ⭐</div>
+        <button class="btn-open">ОТКРЫТЬ</button>
     </div>
+    <!-- CYBER CASE -->
+    <div class="case-card" onclick="alert('Недостаточно звезд!')">
+        <img src="https://cdn-icons-png.flaticon.com" style="filter: hue-rotate(90deg);">
+        <div>CYBER PUNK</div>
+        <div class="case-price">50 ⭐</div>
+        <button class="btn-open">КУПИТЬ</button>
+    </div>
+</div>
 
-    <script>
-        const tg = window.Telegram.WebApp;
-        tg.expand(); // Разворачиваем на весь экран
+<div id="roulette-overlay">
+    <h2 id="status-text">КРУТИМ БАРАБАН...</h2>
+    <div class="tape-container">
+        <div class="pointer"></div>
+        <div id="tape" class="tape"></div>
+    </div>
+</div>
 
-        function openCase() {
-            const roulette = document.getElementById('roulette');
-            roulette.innerText = "⏳ КРУТИМ... ПИЗДИМ...";
-            
-            setTimeout(() => {
-                // Тот самый первый подкрученный дроп!
-                roulette.innerHTML = "❤️ NFT Сердечко (15⭐)";
-                alert("ЕБАТЬ ТЫ ВЕЗУНЧИК! Выпало NFT Сердечко!");
-                document.getElementById('status').innerText = "Следующий кейс через 23:59:59";
-            }, 2000);
+<script>
+    const tg = window.Telegram.WebApp;
+    tg.expand();
+
+    function startRoulette(type) {
+        const overlay = document.getElementById('roulette-overlay');
+        const tape = document.getElementById('tape');
+        overlay.style.display = 'flex';
+        
+        // Генерим мусор в ленту
+        tape.innerHTML = '';
+        for(let i=0; i<40; i++) {
+            const div = document.createElement('div');
+            div.className = 'item';
+            div.innerHTML = i === 35 ? '❤️' : '💩'; // На 35 позиции наше сердечко
+            tape.appendChild(div);
         }
-    </script>
+
+        // Запуск анимации
+        setTimeout(() => {
+            tape.style.transform = 'translateX(-3300px)'; // Крутим к 35-му элементу
+        }, 100);
+
+        setTimeout(() => {
+            alert("ПИЗДЕЦ! ТЕБЕ ВЫПАЛО: ❤️ NFT Сердечко (15⭐)");
+            overlay.style.display = 'none';
+            tape.style.transform = 'translateX(0)';
+        }, 4500);
+    }
+</script>
 </body>
 </html>
